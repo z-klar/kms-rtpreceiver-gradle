@@ -21,6 +21,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
@@ -117,6 +118,42 @@ public class Handler extends TextWebSocketHandler
           ex, sessionId);
       sendError(session, "Exception: " + ex.getMessage());
     }
+  }
+
+  public ArrayList<WebrtcStats> GetStats() {
+    String  sPom = "";
+    ArrayList<WebrtcStats> statsArray = new ArrayList<>();
+    for (Map.Entry<String, UserSession> globEntry : users.entrySet() ) {
+      WebrtcStats WebStats = new WebrtcStats();
+      UserSession user = globEntry.getValue();
+      String sessionId = globEntry.getKey();
+      WebStats.setSessionId(globEntry.getKey());
+
+      RtpEndpoint rtpEp = user.getRtpEndpoint();
+      WebRtcEndpoint webEp = user.getWebRtcEndpoint();
+      MediaType mediaType = MediaType.VIDEO;
+      Map<String, Stats> statsMap = rtpEp.getStats(mediaType);
+      for (Map.Entry<String,Stats> entry : statsMap.entrySet()) {
+        if(entry.getValue().getType() == StatsType.inboundrtp) {
+          RTCInboundRTPStreamStats st = (RTCInboundRTPStreamStats) entry.getValue();
+          WebStats.setSsrc(st.getSsrc());
+          WebStats.setRTPBytesReceived(st.getBytesReceived());
+          WebStats.setRTPPacketsReceived(st.getPacketsReceived());
+        }
+      }
+      mediaType = MediaType.VIDEO;
+      statsMap = webEp.getStats(mediaType);
+      for (Map.Entry<String,Stats> entry : statsMap.entrySet()) {
+        if(entry.getValue().getType() == StatsType.outboundrtp) {
+          RTCOutboundRTPStreamStats st = (RTCOutboundRTPStreamStats) entry.getValue();
+          WebStats.setWEBBytesSent(st.getBytesSent());
+          WebStats.setWEBPacketsSent(st.getPacketsSent());
+          WebStats.setWEBStatus(webEp.getConnectionState().toString());
+        }
+      }
+      statsArray.add(WebStats);
+    }
+    return(statsArray);
   }
 
   //=============================================================================
