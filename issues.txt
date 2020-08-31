@@ -1,0 +1,3 @@
+- all batch files must have appropriate permissions
+- all batch files must have LF-only line ends (NOT CR/LF !)
+

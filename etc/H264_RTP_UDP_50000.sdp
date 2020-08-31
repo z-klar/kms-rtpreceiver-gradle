@@ -1,0 +1,10 @@
+v=0
+o=IN IP4 192.168.1.53
+s=MGB video stream
+i=A video stream of a MGB framegrabber
+t=0 0
+a=tool:GStreamer
+a=type:broadcast
+m=video 50000 RTP/AVP 96
+c=IN IP4 192.168.1.53
+a=rtpmap:96 H264/90000
